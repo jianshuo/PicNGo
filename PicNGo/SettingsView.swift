@@ -13,6 +13,8 @@ struct SettingsView: View {
 
     @State private var tempAPIKey: String = ""
     @State private var showingKey = false
+    @State private var allowAIDataSharing = false
+    @State private var showingAIConsentConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -50,7 +52,7 @@ struct SettingsView: View {
                 } header: {
                     Text("API Configuration")
                 } footer: {
-                    Text("Your key is stored locally on this device only and never shared.")
+                    Text("Your key is stored locally on this device and used only to call OpenAI when you request analysis.")
                 }
 
                 Section {
@@ -80,6 +82,27 @@ struct SettingsView: View {
                     Text("AI responses will be returned in the selected language.")
                 }
 
+                Section {
+                    Toggle("Allow AI Data Sharing", isOn: Binding(
+                        get: { allowAIDataSharing },
+                        set: { newValue in
+                            if newValue {
+                                showingAIConsentConfirmation = true
+                            } else {
+                                allowAIDataSharing = false
+                                apiKeyManager.hasGrantedAIDataSharingConsent = false
+                            }
+                        }
+                    ))
+                } header: {
+                    Text("Data & Privacy")
+                } footer: {
+                    Text(
+                        "When enabled, PicNGo sends selected food photos and related text prompts to OpenAI " +
+                        "to generate analysis results. You can turn this off at any time."
+                    )
+                }
+
                 Section("About") {
                     LabeledContent("Model", value: "GPT-4o")
                     LabeledContent("Feature", value: "Vision + AI Analysis")
@@ -96,6 +119,21 @@ struct SettingsView: View {
         }
         .onAppear {
             tempAPIKey = apiKeyManager.apiKey
+            allowAIDataSharing = apiKeyManager.hasGrantedAIDataSharingConsent
+        }
+        .alert("Allow AI Data Sharing?", isPresented: $showingAIConsentConfirmation) {
+            Button("Cancel", role: .cancel) {
+                allowAIDataSharing = false
+            }
+            Button("Allow") {
+                allowAIDataSharing = true
+                apiKeyManager.hasGrantedAIDataSharingConsent = true
+            }
+        } message: {
+            Text(
+                "PicNGo sends your selected photos, food/ingredient prompts, and language preference to OpenAI " +
+                "to generate nutrition analysis."
+            )
         }
     }
 }

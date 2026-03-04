@@ -11,6 +11,7 @@ struct IngredientDetailView: View {
     let ingredient: String
     let apiKey: String
     let language: AppLanguage
+    let hasAIDataSharingConsent: Bool
 
     @State private var analysis: IngredientAnalysis?
     @State private var isLoading = true
@@ -153,6 +154,12 @@ struct IngredientDetailView: View {
     // MARK: - Load
 
     func loadAnalysis() async {
+        guard hasAIDataSharingConsent else {
+            isLoading = false
+            errorMessage = "AI data sharing permission is required to analyze ingredients."
+            return
+        }
+
         isLoading = true
         errorMessage = nil
         do {

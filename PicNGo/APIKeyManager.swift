@@ -39,6 +39,7 @@ final class APIKeyManager: ObservableObject {
 
     private let apiKeyStorageKey  = "anthropic_api_key"
     private let languageStorageKey = "app_language"
+    private let aiDataConsentStorageKey = "ai_data_sharing_consent"
 
     @Published var apiKey: String {
         didSet { UserDefaults.standard.set(apiKey, forKey: apiKeyStorageKey) }
@@ -46,6 +47,10 @@ final class APIKeyManager: ObservableObject {
 
     @Published var selectedLanguage: AppLanguage {
         didSet { UserDefaults.standard.set(selectedLanguage.rawValue, forKey: languageStorageKey) }
+    }
+
+    @Published var hasGrantedAIDataSharingConsent: Bool {
+        didSet { UserDefaults.standard.set(hasGrantedAIDataSharingConsent, forKey: aiDataConsentStorageKey) }
     }
 
     var hasValidKey: Bool {
@@ -56,5 +61,6 @@ final class APIKeyManager: ObservableObject {
         self.apiKey = UserDefaults.standard.string(forKey: "anthropic_api_key") ?? ""
         let savedLang = UserDefaults.standard.string(forKey: "app_language") ?? ""
         self.selectedLanguage = AppLanguage(rawValue: savedLang) ?? .english
+        self.hasGrantedAIDataSharingConsent = UserDefaults.standard.bool(forKey: aiDataConsentStorageKey)
     }
 }
